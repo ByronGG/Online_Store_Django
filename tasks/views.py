@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
+from .models import Product
+from django.core.paginator import Paginator  # Paginacion
 
 
 # Create your views here.
@@ -37,9 +39,12 @@ def signUp(request):
             {"form": UserCreationForm, "error": "Password do not match"},
         )
 
-
-def tasks(request):
-    return render(request, "tasks.html")
+def product_list(request):
+    product_list = Product.objects.all()
+    paginator = Paginator(product_list, 10)  # Muestra 10 productos por página
+    page_number = request.GET.get('page')
+    products = paginator.get_page(page_number)
+    return render(request, 'inventory/products.html', {'products': products})
 
 
 def signOut(request):
