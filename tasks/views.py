@@ -1,10 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
-from django.http import HttpResponse
+from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-from .models import Product
+from .models import Product, Order, OrderItem
 from django.core.paginator import Paginator  # Paginacion
 
 
@@ -39,12 +39,71 @@ def signUp(request):
             {"form": UserCreationForm, "error": "Password do not match"},
         )
 
+
 def product_list(request):
     product_list = Product.objects.all()
     paginator = Paginator(product_list, 10)  # Muestra 10 productos por página
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     products = paginator.get_page(page_number)
-    return render(request, 'inventory/products.html', {'products': products})
+    return render(request, "inventory/products.html", {"products": products})
+
+
+def add_to_cart(request, product_id):
+    if not request.user.is_authenticated:
+        messages.error(
+            request, "Debes iniciar sesión para agregar productos al carrito."
+        )
+        return redirect("signin")
+    product = get_object_or_404(Product, id=product_id)
+    order, created = Order.objects.get_or_create(user=request.user, is_completed=False)
+    order_item, item_created = OrderItem.objects.get_or_create(
+        order=order, product=product
+    )
+    if not item_created:
+        order_item.quantity += 1
+    else:
+        order_item.price = (
+            product.price
+        )  # Establece el precio del producto al crear el OrderItem
+    order_item.save()  # Guarda el OrderItem actualizado
+    order.total += product.price  # Actualiza el total del pedido
+    order.save()
+    messages.success(request, f"{product.name} agregado al carrito.")
+    return redirect("product_list")
+
+
+def remove_from_cart(request, item_id):
+    if not request.user.is_authenticated:
+        messages.error(request, "Debes iniciar sesión para modificar el carrito.")
+        return redirect("signin")
+    order_item = get_object_or_404(OrderItem, id=item_id, order__user=request.user)
+    order = order_item.order
+    order.total -= (
+        order_item.price * order_item.quantity
+    )  # Resta el total del ítem eliminado
+    order.save()
+    order_item.delete()
+    messages.success(request, f"{order_item.product.name} eliminado del carrito.")
+    return redirect("view_cart")
+
+
+def view_cart(request):
+    order = Order.objects.filter(user=request.user, is_completed=False).first()
+    return render(request, "invetory/cart.html", {"order": order})
+
+
+def checkout(request):
+    if not request.user.is_authenticated:
+        messages.error(request, "Debes iniciar sesión para finalizar la compra.")
+        return redirect("signin")
+    order = Order.objects.filter(user=request.user, is_completed=False).first()
+    if order and order.items.exists():
+        order.is_completed = True
+        order.save()
+        messages.success(request, "¡Compra realizada con éxito!")
+    else:
+        messages.error(request, "No hay productos en el carrito.")
+    return redirect("home")
 
 
 def signOut(request):
@@ -101,3 +160,11 @@ def signIn(request):
                 "signin.html",
                 {"form": form, "error": "Invalid form data"},
             )
+
+
+def profile(request):
+    if not request.user.is_authenticated:
+        messages.error(request, "Debes iniciar sesión para ver tu perfil.")
+        return redirect("signin")
+    orders = Order.objects.filter(user=request.user, is_completed=True)
+    return render(request, "inventory/profile.html", {"orders": orders})

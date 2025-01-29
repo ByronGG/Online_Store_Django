@@ -1,0 +1,37 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Carrito de Compras</h1>
+    {% if order %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.price }}</td>
+                <td>${{ item.get_total }}</td>
+                <td>
+                    <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-danger btn-sm">Eliminar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h4>Total: ${{ order.total }}</h4>
+    <a href="{% url 'checkout' %}" class="btn btn-success">Finalizar Compra</a>
+    {% else %}
+    <p>Tu carrito está vacío.</p>
+    {% endif %}
+</div>
+{% endblock %}

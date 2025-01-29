@@ -1,71 +1,40 @@
-{% extends 'base.html' %}
+{% extends 'layouts/base.html' %}
 
 {% block content %}
-<div class="container">
-    <h1 class="my-4">Lista de Productos</h1>
+<section class="container">
+    <h1 class="my-4">Catálogo de Productos</h1>
     
-    <!-- Formulario de Búsqueda -->
-    <form method="GET" action="/products/" class="mb-4">
-        <div class="input-group">
+    <!-- Filtros y Búsqueda -->
+    <form method="GET" action="{% url 'product_list' %}" class="mb-4">
+        <section class="input-group">
             <input type="text" name="q" class="form-control" placeholder="Buscar productos..." value="{{ request.GET.q }}">
+            <select name="category" class="form-select">
+                <option value="">Todas las categorías</option>
+                {% for category in categories %}
+                <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+                {% endfor %}
+            </select>
             <button type="submit" class="btn btn-primary">Buscar</button>
-        </div>
+        </section>
     </form>
 
-    <!-- Tabla de Productos -->
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Stock</th>
-                <th>Precio</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for product in products %}
-            <tr>
-                <td>{{ product.name }}</td>
-                <td>{{ product.category.name }}</td>
-                <td>{{ product.stock }}</td>
-                <td>${{ product.price }}</td>
-                <td>
-                    <a href="/products/{{ product.id }}/" class="btn btn-info btn-sm">Ver</a>
-                    <a href="/products/{{ product.id }}/edit/" class="btn btn-warning btn-sm">Editar</a>
-                    <a href="/products/{{ product.id }}/delete/" class="btn btn-danger btn-sm">Eliminar</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <!-- Paginación -->
-    <nav aria-label="Page navigation">
-        <ul class="pagination">
-            {% if products.has_previous %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ products.previous_page_number }}&q={{ request.GET.q }}" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            </li>
-            {% endif %}
-            {% for num in products.paginator.page_range %}
-            <li class="page-item {% if num == products.number %}active{% endif %}">
-                <a class="page-link" href="?page={{ num }}&q={{ request.GET.q }}">{{ num }}</a>
-            </li>
-            {% endfor %}
-            {% if products.has_next %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ products.next_page_number }}&q={{ request.GET.q }}" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            </li>
-            {% endif %}
-        </ul>
-    </nav>
-
-    <!-- Botón para Agregar Producto -->
-    <a href="/products/new/" class="btn btn-primary">Agregar Producto</a>
-</div>
+    <!-- Lista de Productos -->
+    <section class="row">
+        {% for product in products %}
+        <section class="col-md-4 mb-4">
+            <section class="card h-100">
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                <section class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">{{ product.description }}</p>
+                    <p class="card-text"><strong>Precio:</strong> ${{ product.price }}</p>
+                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary">Agregar al carrito</a>
+                </section>
+            </section>
+        </section>
+        {% endfor %}
+    </section>
+</section>
 {% endblock %}
