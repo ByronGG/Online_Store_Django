@@ -26,7 +26,7 @@ def signUp(request):
                 )
                 user.save()
                 login(request, user)
-                return redirect("tasks")
+                return redirect("home")
             except IntegrityError:
                 return render(
                     request,
@@ -108,7 +108,7 @@ def checkout(request):
 
 def signOut(request):
     logout(request)
-    return redirect("home")
+    return redirect("signin")
 
 
 def signIn(request):
@@ -142,4 +142,4 @@ def profile(request):
         messages.error(request, "Debes iniciar sesión para ver tu perfil.")
         return redirect("signin")
     orders = Order.objects.filter(user=request.user, is_completed=True)
-    return render(request, "inventory/profile.html", {"orders": orders})
+    return render(request, "profile.html", {"orders": orders})
