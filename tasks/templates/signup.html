@@ -1,25 +1,26 @@
 {% extends 'layouts/base.html' %}
-{% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/register.css' %}">
+{% endblock %}
 <body>
-    <header>
-        <h1>Sign Up</h1>
-    </header>
-    <main>
-        {{error}}
-        <form action="/signup/" method="POST">
-            {% csrf_token %}
-            {{form.as_p}}
-            <button type="submit">Sign Up</button>
-        </form>
-    </main>
-    <footer></footer>
+    {% block content %}
+    <section class="shadow-wrap">
+        <section class="form-wrap">
+            <h2>Registrarse</h2>
+            <form method="post">
+                {% csrf_token %}
+                <label for="id_username">Usuario:</label>
+                <input type="text" id="id_username" name="username">
+                
+                <label for="id_password">Contraseña:</label>
+                <input type="password" id="id_password" name="password">
+
+                <button type="submit">Registrarse</button>
+            </form>
+            <a href="{% url 'signin' %}" class="signup-link">¿Ya tienes cuenta? Inicia sesión</a>
+        </section>
+    </section>
 </body>
-</html>
 {% endblock %}
