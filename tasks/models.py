@@ -1,46 +1,44 @@
 from django.db import models
+from django.contrib.auth.models import User
 
-# Create your models here.
 class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True, verbose_name="Nombre")
-    description = models.TextField(blank=True, null=True, verbose_name="Descripción")
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
-    
-    class Meta:
-        verbose_name = "Categoria"
-        verbose_name_plural = "Categorias"
+
 
 class Product(models.Model):
-    name = models.CharField(max_length=200, verbose_name="Nombre")
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="Categoria")
-    description = models.TextField(blank=True, null=True, verbose_name="Descripción")
-    stock = models.PositiveBigIntegerField(default=0, verbose_name="Stock")
-    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Precio")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Fecha de actualización")
+    name = models.CharField(max_length=200)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    description = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.PositiveIntegerField(default=0)
+    image = models.ImageField(upload_to='products/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
-    
-    class Meta:
-        verbose_name = "Producto"
-        verbose_name_plural = "Productos"
 
-class StockMovement(models.Model):
-    MOVEMENT_TYPES = [
-        ('IN', 'Entrada'),
-        ('OUT', 'Salida'),
-    ]
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Producto")
-    quantity = models.IntegerField(verbose_name="Cantidad")
-    movement_type = models.CharField(max_length=10, choices=MOVEMENT_TYPES, verbose_name="Tipo de movimiento")
-    movement_date = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de movimiento")
+
+class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    is_completed = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.get_movement_type_display()} - {self.product} - {self.quantity}"
-    
-    class Meta:
-        verbose_name = "Movimiento de stock"
-        verbose_name_plural = "Movimientos de stock"
+        return f"Order #{self.id} by {self.user.username}"
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product.name} (${self.price})"
