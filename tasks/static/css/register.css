@@ -8,16 +8,24 @@
 
 body {
     display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #fff;
+}
+
+main {
+    display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: #fff;
+    flex-grow: 1;
 }
 
 .shadow-wrap {
     border-radius: 5px;
     padding: 25px;
     background-color: #F0F2FB;
+    width: 100%;
+    max-width: 500px;
 }
 
 .form-wrap {

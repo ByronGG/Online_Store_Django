@@ -4,23 +4,21 @@
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/register.css' %}">
 {% endblock %}
-<body>
-    {% block content %}
-    <section class="shadow-wrap">
-        <section class="form-wrap">
-            <h2>Registrarse</h2>
-            <form method="post">
-                {% csrf_token %}
-                <label for="id_username">Usuario:</label>
-                <input type="text" id="id_username" name="username">
-                
-                <label for="id_password">Contraseña:</label>
-                <input type="password" id="id_password" name="password">
+{% block content %}
+<section class="shadow-wrap">
+    <section class="form-wrap">
+        <h2>Registrarse</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <label for="id_username">Usuario:</label>
+            <input type="text" id="id_username" name="username">
+            
+            <label for="id_password">Contraseña:</label>
+            <input type="password" id="id_password" name="password">
 
-                <button type="submit">Registrarse</button>
-            </form>
-            <a href="{% url 'signin' %}" class="signup-link">¿Ya tienes cuenta? Inicia sesión</a>
-        </section>
+            <button type="submit">Registrarse</button>
+        </form>
+        <a href="{% url 'signin' %}" class="signup-link">¿Ya tienes cuenta? Inicia sesión</a>
     </section>
-</body>
+</section>
 {% endblock %}
