@@ -1,5 +1,4 @@
 {% extends 'layouts/base.html' %}
-
 {% block content %}
 <section class="container">
     <h1 class="my-4">Catálogo de Productos</h1>
@@ -19,17 +18,21 @@
             <button type="submit" class="btn btn-primary">Buscar</button>
         </section>
     </form>
-
+    {% load static %}
     <!-- Lista de Productos -->
     <section class="row">
         {% for product in products %}
         <section class="col-md-4 mb-4">
             <section class="card h-100">
+                {% if product.image %}
                 <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                {% else %}
+                <img src="{% static 'images/default_image.png' %}" class="card-img-top" alt="Default Image">
+                {% endif %}
                 <section class="card-body">
                     <h5 class="card-title">{{ product.name }}</h5>
                     <p class="card-text">{{ product.description }}</p>
-                    <p class="card-text"><strong>Precio:</strong> ${{ product.price }}</p>
+                    <p class="card-text">{{ product.price }}</p>
                     <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary">Agregar al carrito</a>
                 </section>
             </section>
