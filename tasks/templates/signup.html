@@ -3,22 +3,29 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/register.css' %}">
+    <style>
+        .errorlist {
+            color: red;
+        }
+    </style>
 {% endblock %}
 {% block content %}
-<section class="shadow-wrap">
-    <section class="form-wrap">
-        <h2>Registrarse</h2>
-        <form method="POST">
-            {% csrf_token %}
-            <label for="id_username">Usuario:</label>
-            <input type="text" id="id_username" name="username">
-            
-            <label for="id_password">Contraseña:</label>
-            <input type="password" id="id_password" name="password">
-
-            <button type="submit">Registrarse</button>
-        </form>
-        <a href="{% url 'signin' %}" class="signup-link">¿Ya tienes cuenta? Inicia sesión</a>
+    <section class="shadow-wrap">
+        <section class="form-wrap">
+            <h3>Registrate</h3>
+            <form method="post">
+                {% csrf_token %}
+                {{ form }}
+                <button type="submit">Submit</button>
+            </form>
+            {% if messages %}
+                <ul class="errorlist">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            <a class="signup-link" href="{% url 'signin' %}">Ya tienes una cuenta? Inicia sesión</a>
+        </section>
     </section>
-</section>
 {% endblock %}

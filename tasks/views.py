@@ -6,6 +6,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
 from .models import Product, Order, OrderItem
 from django.core.paginator import Paginator  # Paginacion
+import re
 
 
 # Create your views here.
@@ -15,29 +16,38 @@ def home(request):
 
 def signUp(request):
     if request.method == "GET":
-        return render(request, "signup.html", {"form": UserCreationForm})
+        return render(request, "signup.html", {"form": UserCreationForm()})
     else:
-        if request.POST["password1"] == request.POST["password2"]:
-            try:
-                # register user
-                user = User.objects.create_user(
-                    username=request.POST["username"],
-                    password=request.POST["password1"],
-                )
-                user.save()
-                login(request, user)
-                return redirect("home")
-            except IntegrityError:
-                return render(
-                    request,
-                    "signup.html",
-                    {"form": UserCreationForm, "error": "Username already exists"},
-                )
-        return render(
-            request,
-            "signup.html",
-            {"form": UserCreationForm, "error": "Password do not match"},
-        )
+        username = request.POST["username"]
+        password1 = request.POST["password1"]
+        password2 = request.POST["password2"]
+        if password1 != password2:
+            messages.error(request, "Passwords do not match")
+            return render(request, "signup.html", {"form": UserCreationForm()})
+        if username == password1:
+            messages.error(request, "Password cannot be the same as the username")
+            return render(request, "signup.html", {"form": UserCreationForm()})
+        if len(password1) < 8:
+            messages.error(request, "Password must be at least 8 characters long")
+            return render(request, "signup.html", {"form": UserCreationForm()})
+        if not re.search(r"[A-Za-z]", password1):
+            messages.error(request, "Password must contain at least one letter")
+            return render(request, "signup.html", {"form": UserCreationForm()})
+        if re.search(r"^\d+$", password1):
+            messages.error(request, "Password cannot be entirely numeric")
+            return render(request, "signup.html", {"form": UserCreationForm()})
+        try:
+            # register user
+            user = User.objects.create_user(
+                username=username,
+                password=password1,
+            )
+            user.save()
+            login(request, user)
+            return redirect("home")
+        except IntegrityError:
+            messages.error(request, "Username already exists")
+            return render(request, "signup.html", {"form": UserCreationForm()})
 
 
 def product_list(request):
