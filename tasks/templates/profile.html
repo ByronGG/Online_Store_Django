@@ -1,7 +1,7 @@
 {% extends 'layouts/base.html' %}
 
 {% block content %}
-<div class="container">
+<section class="container">
     <h1 class="my-4">Mi Perfil</h1>
     <h2>Historial de Pedidos</h2>
     {% if orders %}
@@ -20,5 +20,5 @@
     {% else %}
     <p>No tienes pedidos realizados.</p>
     {% endif %}
-</div>
+</section>
 {% endblock %}

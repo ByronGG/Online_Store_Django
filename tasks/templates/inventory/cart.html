@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container">
     <h1 class="my-4">Carrito de Compras</h1>
-    {% if order %}
+    {% if order and order.items.all %}
     <table class="table">
         <thead>
             <tr>

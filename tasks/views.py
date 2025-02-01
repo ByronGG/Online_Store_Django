@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-from .models import Product, Order, OrderItem
+from .models import Product, Order, OrderItem # Modelos BD
 from django.core.paginator import Paginator  # Paginacion
 import re
 
@@ -60,26 +60,24 @@ def product_list(request):
 
 def add_to_cart(request, product_id):
     if not request.user.is_authenticated:
-        messages.error(
-            request, "Debes iniciar sesión para agregar productos al carrito."
-        )
+        messages.error(request, "Debes iniciar sesión para agregar productos al carrito.")
         return redirect("signin")
     product = get_object_or_404(Product, id=product_id)
     order, created = Order.objects.get_or_create(user=request.user, is_completed=False)
+    # Obtener o crear el OrderItem, asegurándote de establecer el precio
     order_item, item_created = OrderItem.objects.get_or_create(
-        order=order, product=product
+        order=order,
+        product=product,
+        defaults={'price': product.price}  # Establece el precio al crear el OrderItem
     )
     if not item_created:
         order_item.quantity += 1
-    else:
-        order_item.price = (
-            product.price
-        )  # Establece el precio del producto al crear el OrderItem
     order_item.save()  # Guarda el OrderItem actualizado
-    order.total += product.price  # Actualiza el total del pedido
+    # Recalcula el total del pedido
+    order.total = sum(item.get_total() for item in order.items.all())
     order.save()
     messages.success(request, f"{product.name} agregado al carrito.")
-    return redirect("product_list")
+    return redirect("view_cart")  # Redirige al carrito después de agregar el producto
 
 
 def remove_from_cart(request, item_id):
@@ -88,18 +86,20 @@ def remove_from_cart(request, item_id):
         return redirect("signin")
     order_item = get_object_or_404(OrderItem, id=item_id, order__user=request.user)
     order = order_item.order
-    order.total -= (
-        order_item.price * order_item.quantity
-    )  # Resta el total del ítem eliminado
-    order.save()
+    # Elimina el ítem y recalcula el total del pedido
     order_item.delete()
+    order.total = sum(item.get_total() for item in order.items.all())
+    order.save()
     messages.success(request, f"{order_item.product.name} eliminado del carrito.")
     return redirect("view_cart")
 
 
 def view_cart(request):
+    if not request.user.is_authenticated:
+        messages.error(request, "Debes iniciar sesión para ver el carrito.")
+        return redirect("signin")
     order = Order.objects.filter(user=request.user, is_completed=False).first()
-    return render(request, "invetory/cart.html", {"order": order})
+    return render(request, "inventory/cart.html", {"order": order})
 
 
 def checkout(request):
