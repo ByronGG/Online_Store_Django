@@ -7,6 +7,8 @@
     <title>Online Store - Django APP</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome para el ícono del carrito -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;700&display=swap" rel="stylesheet"> <!-- Fuente de Google Fonts -->
     <!-- Custom CSS (styles.css)-->
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
@@ -30,6 +32,15 @@
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <!-- Ícono del carrito -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'view_cart' %}">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="badge bg-danger" id="cart-count">
+                                {% if cart_item_count %}{{ cart_item_count }}{% else %}0{% endif %}
+                            </span>
+                        </a>
+                    </li>
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -81,5 +92,22 @@
     <!-- Bootstrap JS y dependencias -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+    <!-- Script para actualizar dinámicamente el contador del carrito -->
+    <script>
+        function updateCartCount() {
+            fetch("{% url 'get_cart_count' %}")
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('cart-count').textContent = data.cart_item_count;
+                });
+        }
+
+        // Actualizar el contador cada 5 segundos (opcional)
+        setInterval(updateCartCount, 5000);
+
+        // Actualizar el contador al cargar la página
+        document.addEventListener('DOMContentLoaded', updateCartCount);
+    </script>
 </body>
 </html>

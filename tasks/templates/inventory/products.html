@@ -1,11 +1,13 @@
 {% extends 'layouts/base.html' %}
+{% load static %}
+
 {% block content %}
-<section class="container">
+<div class="container">
     <h1 class="my-4">Catálogo de Productos</h1>
     
     <!-- Filtros y Búsqueda -->
     <form method="GET" action="{% url 'product_list' %}" class="mb-4">
-        <section class="input-group">
+        <div class="input-group">
             <input type="text" name="q" class="form-control" placeholder="Buscar productos..." value="{{ request.GET.q }}">
             <select name="category" class="form-select">
                 <option value="">Todas las categorías</option>
@@ -16,28 +18,34 @@
                 {% endfor %}
             </select>
             <button type="submit" class="btn btn-primary">Buscar</button>
-        </section>
+        </div>
     </form>
-    {% load static %}
+
     <!-- Lista de Productos -->
-    <section class="row">
+    <div class="row">
         {% for product in products %}
-        <section class="col-md-4 mb-4">
-            <section class="card h-100">
-                {% if product.image %}
-                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if product.image %}  <!-- Verifica si el producto tiene una imagen -->
+                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
                 {% else %}
-                <img src="{% static 'images/default_image.png' %}" class="card-img-top" alt="Default Image">
+                    <img src="{% static 'images/default_image.png' %}" class="card-img-top" alt="Imagen predeterminada">
                 {% endif %}
-                <section class="card-body">
+                <div class="card-body">
                     <h5 class="card-title">{{ product.name }}</h5>
                     <p class="card-text">{{ product.description }}</p>
-                    <p class="card-text">${{ product.price }}</p>
-                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary">Agregar al carrito</a>
-                </section>
-            </section>
-        </section>
+                    <p class="card-text"><strong>Precio:</strong> ${{ product.price }}</p>
+                    <form method="post" action="{% url 'add_to_cart' product.id %}">
+                        {% csrf_token %}
+                        <div class="input-group mb-3">
+                            <input type="number" name="quantity" class="form-control" value="1" min="1" max="100">
+                            <button type="submit" class="btn btn-primary">Agregar al carrito</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         {% endfor %}
-    </section>
-</section>
+    </div>
+</div>
 {% endblock %}

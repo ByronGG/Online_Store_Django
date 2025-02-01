@@ -2,9 +2,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.http import JsonResponse
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-from .models import Product, Order, OrderItem # Modelos BD
+from .models import Product, Order, OrderItem  # Modelos BD
 from django.core.paginator import Paginator  # Paginacion
 import re
 
@@ -60,24 +61,31 @@ def product_list(request):
 
 def add_to_cart(request, product_id):
     if not request.user.is_authenticated:
-        messages.error(request, "Debes iniciar sesión para agregar productos al carrito.")
+        messages.error(
+            request, "Debes iniciar sesión para agregar productos al carrito."
+        )
         return redirect("signin")
     product = get_object_or_404(Product, id=product_id)
     order, created = Order.objects.get_or_create(user=request.user, is_completed=False)
+    # Obtener la cantidad del formulario (por defecto 1 si no se proporciona)
+    quantity = int(request.POST.get("quantity", 1))
     # Obtener o crear el OrderItem, asegurándote de establecer el precio
     order_item, item_created = OrderItem.objects.get_or_create(
         order=order,
         product=product,
-        defaults={'price': product.price}  # Establece el precio al crear el OrderItem
+        defaults={
+            "price": product.price,
+            "quantity": quantity,
+        },  # Establece el precio y la cantidad al crear el OrderItem
     )
     if not item_created:
-        order_item.quantity += 1
+        order_item.quantity += quantity  # Incrementa la cantidad si el ítem ya existe
     order_item.save()  # Guarda el OrderItem actualizado
     # Recalcula el total del pedido
     order.total = sum(item.get_total() for item in order.items.all())
     order.save()
-    messages.success(request, f"{product.name} agregado al carrito.")
-    return redirect("view_cart")  # Redirige al carrito después de agregar el producto
+    messages.success(request, f"{quantity} x {product.name} agregado(s) al carrito.")
+    return redirect("product_list")  # Redirige a la lista de productos
 
 
 def remove_from_cart(request, item_id):
@@ -101,6 +109,19 @@ def view_cart(request):
     order = Order.objects.filter(user=request.user, is_completed=False).first()
     return render(request, "inventory/cart.html", {"order": order})
 
+def cart_item_count(request):
+    if request.user.is_authenticated:
+        order = Order.objects.filter(user=request.user, is_completed=False).first()
+        if order:
+            return {'cart_item_count': order.items.count()}
+    return {'cart_item_count': 0}
+
+def get_cart_count(request):
+    if request.user.is_authenticated:
+        order = Order.objects.filter(user=request.user, is_completed=False).first()
+        if order:
+            return JsonResponse({'cart_item_count': order.items.count()})
+    return JsonResponse({'cart_item_count': 0})
 
 def checkout(request):
     if not request.user.is_authenticated:

@@ -35,6 +35,7 @@ urlpatterns = [
     path("cart/remove/<int:item_id>/", views.remove_from_cart, name="remove_from_cart"),
     path("checkout/", views.checkout, name="checkout"),
     path("profile/", views.profile, name="profile"),
+    path('get-cart-count/', views.get_cart_count, name='get_cart_count'),
 ]
 
 if settings.DEBUG:
