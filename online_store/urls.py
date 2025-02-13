@@ -27,7 +27,10 @@ urlpatterns = [
     path("signup/", views.signUp, name="signup"),
     path("signin/", views.signIn, name="signin"),
     path("logout/", views.signOut, name="logout"),
-    path("products/", views.product_list, name="products"),
+    path("about/", views.about, name="about"),
+    path("contact/", views.contact, name="contact"),
+    path("privacy/", views.privacy, name="privacy"),
+    path("products/", views.product_list, name="product_list"),
     path(
         "products/<int:product_id>/add-to-cart/", views.add_to_cart, name="add_to_cart"
     ),

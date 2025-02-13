@@ -6,7 +6,7 @@
     <h1 class="my-4">Catálogo de Productos</h1>
     
     <!-- Filtros y Búsqueda -->
-    <form method="GET" action="{% url 'products' %}" class="mb-4">
+    <form method="GET" action="{% url 'product_list' %}" class="mb-4">
         <div class="input-group">
             <input type="text" name="q" class="form-control" placeholder="Buscar productos..." value="{{ request.GET.q }}">
             <select name="category" class="form-select">

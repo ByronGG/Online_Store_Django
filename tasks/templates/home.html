@@ -9,14 +9,13 @@
 </head>
 <body>
     <main>
-        <h1> HOME </h1>
         <section class="container py-5">
             <section class="row">
                 <section class="col-md-8 mx-auto text-center">
                     <h1 class="display-4 mb-4">¡Bienvenido a nuestra Tienda en Línea!</h1>
                     <p class="lead mb-4">Descubre una amplia selección de productos de alta calidad a precios increíbles.</p>
                     <section class="d-flex justify-content-center gap-3">
-                        <a href="{% url 'products' %}" class="btn btn-primary btn-lg">
+                        <a href="{% url 'product_list' %}" class="btn btn-primary btn-lg">
                             <i class="fas fa-shopping-bag me-2"></i>Ver Productos
                         </a>
                         {% if not user.is_authenticated %}
