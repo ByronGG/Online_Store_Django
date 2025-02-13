@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-from .models import Product, Order, OrderItem  # Modelos BD
+from .models import Product, Order, OrderItem, Category  # Modelos BD
 from django.core.paginator import Paginator  # Paginacion
 import re
 
@@ -56,7 +56,12 @@ def product_list(request):
     paginator = Paginator(product_list, 10)  # Muestra 10 productos por página
     page_number = request.GET.get("page")
     products = paginator.get_page(page_number)
-    return render(request, "inventory/products.html", {"products": products})
+    
+    # Falta retornar el render con el contexto
+    return render(request, "inventory/products.html", {
+        'products': products,
+        'categories': Category.objects.all()
+    })
 
 
 def add_to_cart(request, product_id):
@@ -158,13 +163,13 @@ def signIn(request):
                 return render(
                     request,
                     "signin.html",
-                    {"form": form, "error": "Username or password is incorrect"},
+                    {"form": form, "error": "Usuario o contraseña incorrectos"}
                 )
         else:
             return render(
                 request,
                 "signin.html",
-                {"form": form, "error": "Invalid form data"},
+                {"form": form, "error": "Datos del formulario inválidos"}
             )
 
 
