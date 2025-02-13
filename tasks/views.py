@@ -172,5 +172,25 @@ def profile(request):
     if not request.user.is_authenticated:
         messages.error(request, "Debes iniciar sesión para ver tu perfil.")
         return redirect("signin")
-    orders = Order.objects.filter(user=request.user, is_completed=True)
-    return render(request, "profile.html", {"orders": orders})
+    
+    # Obtener órdenes ordenadas por fecha descendente
+    orders = Order.objects.filter(
+        user=request.user, 
+        is_completed=True
+    ).order_by('-created_at')  # Asumiendo que tienes un campo created_at
+    
+    # Implementar paginación
+    paginator = Paginator(orders, 10)  # 10 órdenes por página
+    page_number = request.GET.get('page')
+    orders_page = paginator.get_page(page_number)
+    
+    context = {
+        'orders': orders_page,
+        'user_info': {
+            'username': request.user.username,
+            'email': request.user.email,
+            'date_joined': request.user.date_joined,
+        }
+    }
+    
+    return render(request, "profile.html", context)
