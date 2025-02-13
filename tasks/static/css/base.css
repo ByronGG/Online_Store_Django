@@ -19,9 +19,95 @@ body {
 }
 
 /* Estilos del footer */
-.footer{
+.footer {
     background-color: #f8f9fa;
-    padding: 20px 0;
+    padding: 40px 0 20px;
     margin-top: auto;
-    text-align: center;
+}
+
+.footer-title {
+    color: #10182F;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.footer-links a {
+    color: #545D7A;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    display: block;
+    padding: 5px 0;
+}
+
+.footer-links a:hover {
+    color: #10182F;
+}
+
+/* Estilos para los íconos de redes sociales */
+.social-links {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-start;
+    margin-top: 15px;
+}
+
+.social-link {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 24px;
+    transition: all 0.3s ease;
+}
+
+.social-link:hover {
+    transform: translateY(-3px);
+    color: #fff;
+    text-decoration: none;
+}
+
+.social-link.facebook {
+    background-color: #1877f2;
+}
+
+.social-link.twitter {
+    background-color: #1da1f2;
+}
+
+.social-link.instagram {
+    background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+}
+
+.social-link.facebook:hover {
+    background-color: #0d6efd;
+    box-shadow: 0 5px 15px rgba(24, 119, 242, 0.4);
+}
+
+.social-link.twitter:hover {
+    background-color: #0c90e7;
+    box-shadow: 0 5px 15px rgba(29, 161, 242, 0.4);
+}
+
+.social-link.instagram:hover {
+    background: linear-gradient(45deg, #833ab4, #fd1d1d, #fcb045);
+    box-shadow: 0 5px 15px rgba(225, 48, 108, 0.4);
+}
+
+@media (max-width: 768px) {
+    .social-links {
+        justify-content: center;
+        margin-top: 25px;
+    }
+    
+    .footer-title {
+        text-align: center;
+        margin-top: 20px;
+    }
+    
+    .footer-links {
+        text-align: center;
+    }
 }

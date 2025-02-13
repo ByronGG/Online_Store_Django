@@ -196,27 +196,34 @@ def signOut(request):
 
 def signIn(request):
     if request.method == "GET":
-        return render(request, "signin.html", {"form": AuthenticationForm()})
+        # Si el usuario ya está autenticado, redirigir al home
+        if request.user.is_authenticated:
+            return redirect("home")
+        return render(request, "signin.html")
     else:
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get("username")
-            password = form.cleaned_data.get("password")
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect("home")
-            else:
-                return render(
-                    request,
-                    "signin.html",
-                    {"form": form, "error": "Usuario o contraseña incorrectos"}
-                )
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        
+        if not username or not password:
+            return render(
+                request,
+                "signin.html",
+                {"error": "Por favor complete todos los campos"}
+            )
+            
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            # Obtener la URL de redirección si existe
+            next_url = request.GET.get('next')
+            if next_url:
+                return redirect(next_url)
+            return redirect("home")
         else:
             return render(
                 request,
                 "signin.html",
-                {"form": form, "error": "Datos del formulario inválidos"}
+                {"error": "Usuario o contraseña incorrectos"}
             )
 
 

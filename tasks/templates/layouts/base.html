@@ -29,15 +29,15 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/' %}active{% endif %}" 
-                           href="{% url 'home' %}" 
-                           {% if request.path == '/' %}aria-current="page"{% endif %}>
+                            href="{% url 'home' %}" 
+                            {% if request.path == '/' %}aria-current="page"{% endif %}>
                             Inicio
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/products/' %}active{% endif %}" 
-                           href="{% url 'product_list' %}"
-                           {% if request.path == '/products/' %}aria-current="page"{% endif %}>
+                            href="{% url 'product_list' %}"
+                            {% if request.path == '/products/' %}aria-current="page"{% endif %}>
                             Productos
                         </a>
                     </li>
@@ -88,37 +88,37 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
-                    <h5>Contacto</h5>
+                    <h5 class="footer-title">Contacto</h5>
                     <address>
-                        <p>Email: contacto@tienda.com</p>
-                        <p>Teléfono: (123) 456-7890</p>
+                        <p><i class="fas fa-envelope me-2"></i>contacto@tienda.com</p>
+                        <p><i class="fas fa-phone me-2"></i>(123) 456-7890</p>
                     </address>
                 </div>
                 <div class="col-md-4">
-                    <h5>Enlaces</h5>
-                    <ul class="list-unstyled">
+                    <h5 class="footer-title">Enlaces</h5>
+                    <ul class="list-unstyled footer-links">
                         <li><a href="{% url 'about' %}">Acerca de</a></li>
                         <li><a href="{% url 'contact' %}">Contacto</a></li>
                         <li><a href="{% url 'privacy' %}">Política de Privacidad</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
-                    <h5>Síguenos</h5>
+                    <h5 class="footer-title">Síguenos</h5>
                     <div class="social-links">
-                        <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter">
+                        <a href="https://facebook.com" target="_blank" rel="noopener" class="social-link facebook" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="https://twitter.com" target="_blank" rel="noopener" class="social-link twitter" aria-label="Twitter">
                             <i class="fab fa-twitter"></i>
                         </a>
-                        <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook">
-                            <i class="fab fa-facebook"></i>
-                        </a>
-                        <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram">
+                        <a href="https://instagram.com" target="_blank" rel="noopener" class="social-link instagram" aria-label="Instagram">
                             <i class="fab fa-instagram"></i>
                         </a>
                     </div>
                 </div>
             </div>
-            <div class="text-center mt-3">
-                <p class="text-muted">© 2024 Online Store. Todos los derechos reservados.</p>
+            <div class="text-center mt-4">
+                <p class="text-muted">© 2025 Online Store. Todos los derechos reservados.</p>
             </div>
         </div>
     </footer>
