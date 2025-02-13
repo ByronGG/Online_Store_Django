@@ -5,47 +5,166 @@
 <div class="container">
     <h1 class="my-4">Catálogo de Productos</h1>
     
-    <!-- Filtros y Búsqueda -->
-    <form method="GET" action="{% url 'product_list' %}" class="mb-4">
-        <div class="input-group">
-            <input type="text" name="q" class="form-control" placeholder="Buscar productos..." value="{{ request.GET.q }}">
-            <select name="category" class="form-select">
-                <option value="">Todas las categorías</option>
-                {% for category in categories %}
-                <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
-                    {{ category.name }}
-                </option>
-                {% endfor %}
-            </select>
-            <button type="submit" class="btn btn-primary">Buscar</button>
+    <!-- Filtros y Búsqueda Mejorados -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{% url 'product_list' %}" class="mb-3" id="filterForm">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" name="q" class="form-control" 
+                                   placeholder="Buscar productos..." 
+                                   value="{{ request.GET.q }}"
+                                   aria-label="Buscar productos">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select name="category" class="form-select" aria-label="Seleccionar categoría">
+                            <option value="">Todas las categorías</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" 
+                                    {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-2"></i>Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Chips de filtros activos -->
+            <div class="active-filters">
+                {% if request.GET.q or request.GET.category %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if request.GET.q %}
+                        <span class="badge bg-primary">
+                            Búsqueda: {{ request.GET.q }}
+                            <a href="?{% if request.GET.category %}category={{ request.GET.category }}{% endif %}" 
+                               class="text-white text-decoration-none ms-2">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if request.GET.category %}
+                        <span class="badge bg-primary">
+                            Categoría: {{ selected_category_name }}
+                            <a href="?{% if request.GET.q %}q={{ request.GET.q }}{% endif %}" 
+                               class="text-white text-decoration-none ms-2">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if request.GET.q or request.GET.category %}
+                        <a href="{% url 'product_list' %}" class="btn btn-sm btn-outline-secondary">
+                            Limpiar filtros
+                        </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
         </div>
-    </form>
+    </div>
+
+    <!-- Resultados y ordenamiento -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <p class="mb-0">Mostrando {{ products.start_index }} - {{ products.end_index }} 
+           de {{ paginator.count }} productos</p>
+        <select class="form-select" style="width: auto;" id="orderBy">
+            <option value="">Ordenar por</option>
+            <option value="price_asc" {% if request.GET.order == 'price_asc' %}selected{% endif %}>
+                Precio: Menor a Mayor
+            </option>
+            <option value="price_desc" {% if request.GET.order == 'price_desc' %}selected{% endif %}>
+                Precio: Mayor a Menor
+            </option>
+            <option value="name" {% if request.GET.order == 'name' %}selected{% endif %}>
+                Nombre A-Z
+            </option>
+        </select>
+    </div>
 
     <!-- Lista de Productos -->
-    <div class="row">
+    <div class="row" id="products-grid">
         {% for product in products %}
         <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                {% if product.image %}  <!-- Verifica si el producto tiene una imagen -->
+            <div class="card h-100 product-card">
+                <div class="position-relative">
+                    {% if product.image %}
                     <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
-                {% else %}
+                    {% else %}
                     <img src="{% static 'images/default_image.png' %}" class="card-img-top" alt="Imagen predeterminada">
-                {% endif %}
-                <div class="card-body">
+                    {% endif %}
+                </div>
+                <div class="card-body d-flex flex-column">
                     <h5 class="card-title">{{ product.name }}</h5>
-                    <p class="card-text">{{ product.description }}</p>
-                    <p class="card-text"><strong>Precio:</strong> ${{ product.price }}</p>
-                    <form method="post" action="{% url 'add_to_cart' product.id %}">
-                        {% csrf_token %}
-                        <div class="input-group mb-3">
-                            <input type="number" name="quantity" class="form-control" value="1" min="1" max="100">
-                            <button type="submit" class="btn btn-primary">Agregar al carrito</button>
-                        </div>
-                    </form>
+                    <p class="card-text flex-grow-1">{{ product.description }}</p>
+                    <div class="mt-auto">
+                        <p class="card-text">
+                            <strong class="text-primary h4">${{ product.price }}</strong>
+                        </p>
+                        <form method="post" action="{% url 'add_to_cart' product.id %}" class="add-to-cart-form">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <input type="number" name="quantity" 
+                                       class="form-control" value="1" 
+                                       min="1" max="100"
+                                       aria-label="Cantidad">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-cart-plus me-2"></i>Agregar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h3>No se encontraron productos</h3>
+            <p class="text-muted">Intenta con otros términos de búsqueda o filtros</p>
+        </div>
         {% endfor %}
     </div>
+
+    <!-- Paginación -->
+    {% if products.has_other_pages %}
+    <nav aria-label="Navegación de páginas" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if products.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ products.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">&laquo;</a>
+            </li>
+            {% endif %}
+
+            {% for num in products.paginator.page_range %}
+            <li class="page-item {% if products.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endfor %}
+
+            {% if products.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ products.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">&raquo;</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
+
+<!-- JavaScript para ordenamiento dinámico -->
+<script>
+document.getElementById('orderBy').addEventListener('change', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('order', this.value);
+    window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
+});
+</script>
 {% endblock %}

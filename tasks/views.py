@@ -8,6 +8,7 @@ from django.db import IntegrityError
 from .models import Product, Order, OrderItem, Category  # Modelos BD
 from django.core.paginator import Paginator  # Paginacion
 import re
+from django.db.models import Q
 
 
 # Create your views here.
@@ -60,16 +61,54 @@ def signUp(request):
 
 
 def product_list(request):
-    product_list = Product.objects.all()
-    paginator = Paginator(product_list, 10)  # Muestra 10 productos por página
-    page_number = request.GET.get("page")
-    products = paginator.get_page(page_number)
+    # Obtener parámetros de búsqueda y filtrado
+    query = request.GET.get('q', '')
+    category_id = request.GET.get('category', '')
+    order = request.GET.get('order', '')
+
+    # Iniciar con todos los productos
+    products = Product.objects.all()
+
+    # Aplicar filtros de búsqueda
+    if query:
+        products = products.filter(
+            Q(name__icontains=query) | 
+            Q(description__icontains=query)
+        )
+
+    # Aplicar filtro de categoría
+    if category_id:
+        products = products.filter(category_id=category_id)
+
+    # Aplicar ordenamiento
+    if order:
+        if order == 'price_asc':
+            products = products.order_by('price')
+        elif order == 'price_desc':
+            products = products.order_by('-price')
+        elif order == 'name':
+            products = products.order_by('name')
+
+    # Paginación
+    paginator = Paginator(products, 9)  # 9 productos por página
+    page_number = request.GET.get('page')
+    products_page = paginator.get_page(page_number)
+
+    # Obtener nombre de categoría seleccionada
+    selected_category_name = ''
+    if category_id:
+        category = Category.objects.filter(id=category_id).first()
+        if category:
+            selected_category_name = category.name
+
+    context = {
+        'products': products_page,
+        'categories': Category.objects.all(),
+        'selected_category_name': selected_category_name,
+        'query': query,
+    }
     
-    # Falta retornar el render con el contexto
-    return render(request, "inventory/products.html", {
-        'products': products,
-        'categories': Category.objects.all()
-    })
+    return render(request, "inventory/products.html", context)
 
 
 def add_to_cart(request, product_id):
