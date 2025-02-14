@@ -5,10 +5,13 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-from .models import Product, Order, OrderItem, Category  # Modelos BD
+from .models import Product, Order, OrderItem, Category, Wishlist, Profile  # Modelos BD
 from django.core.paginator import Paginator  # Paginacion
 import re
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
+import os
+from datetime import datetime
 
 
 # Create your views here.
@@ -227,29 +230,210 @@ def signIn(request):
             )
 
 
+@login_required
 def profile(request):
+    profile, created = Profile.objects.get_or_create(user=request.user)
+    
+    # Verificar si el perfil está completo
+    profile_complete = all([
+        request.user.first_name,
+        request.user.last_name,
+        profile.birth_date,
+        profile.address,
+        profile.city,
+        profile.phone
+    ])
+    
+    # Verificar si tiene tarjeta registrada
+    has_card = bool(profile.card_number)
+    
+    return render(request, 'profile.html', {
+        'profile': profile,
+        'profile_complete': profile_complete,
+        'has_card': has_card,
+        'editing': request.GET.get('edit', False)
+    })
+
+
+def orders(request):
     if not request.user.is_authenticated:
-        messages.error(request, "Debes iniciar sesión para ver tu perfil.")
+        messages.error(request, "Debes iniciar sesión para ver tus pedidos.")
         return redirect("signin")
     
-    # Obtener órdenes ordenadas por fecha descendente
+    # Obtener todas las órdenes completadas del usuario
     orders = Order.objects.filter(
-        user=request.user, 
+        user=request.user,
         is_completed=True
-    ).order_by('-created_at')  # Asumiendo que tienes un campo created_at
+    ).order_by('-created_at')
     
-    # Implementar paginación
-    paginator = Paginator(orders, 10)  # 10 órdenes por página
+    # Paginación
+    paginator = Paginator(orders, 5)  # 5 órdenes por página
     page_number = request.GET.get('page')
     orders_page = paginator.get_page(page_number)
     
-    context = {
-        'orders': orders_page,
-        'user_info': {
-            'username': request.user.username,
-            'email': request.user.email,
-            'date_joined': request.user.date_joined,
-        }
-    }
+    return render(request, "inventory/orders.html", {
+        'orders': orders_page
+    })
+
+
+@login_required
+def wishlist(request):
+    wishlist_items = Wishlist.objects.filter(
+        user=request.user
+    ).select_related('product').order_by('-added_date')
     
-    return render(request, "profile.html", context)
+    return render(request, "inventory/wishlist.html", {
+        'wishlist_items': wishlist_items
+    })
+
+@login_required
+def add_to_wishlist(request, product_id):
+    if request.method != 'POST':
+        messages.error(request, "Método no permitido")
+        return redirect('product_list')
+        
+    product = get_object_or_404(Product, id=product_id)
+    wishlist_item, created = Wishlist.objects.get_or_create(
+        user=request.user,
+        product=product
+    )
+    
+    if created:
+        messages.success(request, f"{product.name} agregado a tu lista de deseos.")
+    else:
+        messages.info(request, f"{product.name} ya está en tu lista de deseos.")
+    
+    # Redirigir a la página anterior
+    return redirect(request.META.get('HTTP_REFERER', 'product_list'))
+
+@login_required
+def remove_from_wishlist(request, product_id):
+    Wishlist.objects.filter(user=request.user, product_id=product_id).delete()
+    messages.success(request, "Producto eliminado de tu lista de deseos.")
+    return redirect('wishlist')
+
+@login_required
+def update_avatar(request):
+    if request.method == 'POST' and request.FILES.get('avatar'):
+        # Obtener o crear el perfil del usuario
+        profile, created = Profile.objects.get_or_create(user=request.user)
+        
+        # Si ya existe una imagen anterior, la eliminamos
+        if profile.avatar:
+            if os.path.isfile(profile.avatar.path):
+                os.remove(profile.avatar.path)
+        
+        # Guardar la nueva imagen
+        profile.avatar = request.FILES['avatar']
+        profile.save()
+        
+        messages.success(request, "Foto de perfil actualizada correctamente.")
+    else:
+        messages.error(request, "Por favor, selecciona una imagen.")
+    
+    return redirect('profile')
+
+@login_required
+def update_profile(request):
+    if request.method == 'POST':
+        # Obtener o crear el perfil del usuario
+        profile, created = Profile.objects.get_or_create(user=request.user)
+        
+        # Validar campos
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        
+        # Validaciones
+        if len(first_name) < 2:
+            messages.error(request, "El nombre debe tener al menos 2 caracteres.")
+            return redirect('profile')
+            
+        if len(last_name) < 2:
+            messages.error(request, "Los apellidos deben tener al menos 2 caracteres.")
+            return redirect('profile')
+            
+        if phone and not phone.isdigit():
+            messages.error(request, "El teléfono solo debe contener números.")
+            return redirect('profile')
+            
+        # Actualizar datos del usuario
+        request.user.first_name = first_name
+        request.user.last_name = last_name
+        request.user.save()
+        
+        # Actualizar datos del perfil
+        try:
+            birth_date = request.POST.get('birth_date')
+            if birth_date:
+                profile.birth_date = birth_date
+        except ValueError:
+            messages.error(request, "Formato de fecha inválido.")
+            return redirect('profile')
+            
+        profile.address = request.POST.get('address', '').strip()
+        profile.city = request.POST.get('city', '').strip()
+        profile.phone = phone
+        profile.save()
+        
+        messages.success(request, "¡Perfil actualizado correctamente!")
+    
+    return redirect('profile')
+
+@login_required
+def update_card(request):
+    if request.method == 'POST':
+        profile = Profile.objects.get(user=request.user)
+        
+        # Obtener y validar datos
+        card_number = request.POST.get('card_number', '').strip()
+        card_holder = request.POST.get('card_holder', '').strip()
+        card_expiry = request.POST.get('card_expiry', '').strip()
+        card_cvv = request.POST.get('card_cvv', '').strip()
+        
+        # Validar fecha de expiración
+        try:
+            if not re.match(r'^(0[1-9]|1[0-2])\/([0-9]{2})$', card_expiry):
+                messages.error(request, "La fecha de expiración debe tener formato MM/YY.")
+                return redirect('profile')
+                
+            # Obtener mes y año de la tarjeta
+            month, year = map(int, card_expiry.split('/'))
+            card_date = datetime(2000 + year, month, 1)
+            
+            # Obtener fecha actual
+            current_date = datetime.now()
+            current_date = datetime(current_date.year, current_date.month, 1)
+            
+            if card_date < current_date:
+                messages.error(request, "La tarjeta ha expirado. Por favor, use una tarjeta válida.")
+                return redirect('profile')
+                
+        except (ValueError, IndexError):
+            messages.error(request, "Fecha de expiración inválida.")
+            return redirect('profile')
+            
+        # Validaciones
+        if not card_number.isdigit() or len(card_number) != 16:
+            messages.error(request, "El número de tarjeta debe tener 16 dígitos.")
+            return redirect('profile')
+        
+        if not card_holder or len(card_holder) < 3:
+            messages.error(request, "El nombre del titular es requerido.")
+            return redirect('profile')
+        
+        if not card_cvv.isdigit() or len(card_cvv) not in [3, 4]:
+            messages.error(request, "El CVV debe tener 3 o 4 dígitos.")
+            return redirect('profile')
+        
+        # Guardar datos
+        profile.card_number = card_number
+        profile.card_holder = card_holder.upper()
+        profile.card_expiry = card_expiry
+        profile.card_cvv = card_cvv
+        profile.save()
+        
+        messages.success(request, "Tarjeta guardada correctamente.")
+    
+    return redirect('profile')
+

@@ -45,3 +45,38 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name} (${self.price})"
+
+
+class Wishlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    added_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')  # Evita duplicados
+        ordering = ['-added_date']
+
+    def __str__(self):
+        return f"Wishlist de {self.user.username} - {self.product.name}"
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    address = models.CharField(max_length=200, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+    # Campos para la tarjeta de crédito
+    card_number = models.CharField(max_length=16, blank=True)
+    card_holder = models.CharField(max_length=100, blank=True)
+    card_expiry = models.CharField(max_length=5, blank=True)  # MM/YY
+    card_cvv = models.CharField(max_length=4, blank=True)
+
+    def __str__(self):
+        return f"Perfil de {self.user.username}"
+
+    def get_masked_card(self):
+        if self.card_number:
+            return f"**** **** **** {self.card_number[-4:]}"
+        return ""

@@ -1,24 +1,296 @@
 {% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
 
 {% block content %}
-<section class="container">
-    <h1 class="my-4">Mi Perfil</h1>
-    <h2>Historial de Pedidos</h2>
-    {% if orders %}
-    <ul>
-        {% for order in orders %}
-        <li>
-            <strong>Pedido #{{ order.id }}</strong> - Total: ${{ order.total }}
-            <ul>
-                {% for item in order.items.all %}
-                <li>{{ item.quantity }} x {{ item.product.name }} - ${{ item.get_total }}</li>
-                {% endfor %}
-            </ul>
-        </li>
+<div class="container py-5">
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
         {% endfor %}
-    </ul>
-    {% else %}
-    <p>No tienes pedidos realizados.</p>
+    </div>
     {% endif %}
-</section>
+
+    <div class="row justify-content-center">
+        <!-- Columna de la foto de perfil -->
+        <div class="col-md-4 mb-4 text-center">
+            <div class="card profile-card">
+                <div class="card-body">
+                    <div class="profile-image-container mb-3">
+                        {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" alt="Foto de perfil" class="profile-image">
+                        {% else %}
+                        <img src="{% static 'images/default_avatar.png' %}" alt="Foto de perfil por defecto" class="profile-image">
+                        {% endif %}
+                    </div>
+                    <form method="post" enctype="multipart/form-data" action="{% url 'update_avatar' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="avatar" class="form-label">Cambiar foto de perfil</label>
+                            <input type="file" id="avatar" name="avatar" class="form-control" accept="image/*" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-upload me-2"></i>Subir foto
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna de información personal y tarjeta -->
+        <div class="col-md-8">
+            <!-- Información Personal -->
+            <div class="card profile-card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="card-title mb-0">Información Personal</h2>
+                        {% if profile_complete and not editing %}
+                        <a href="?edit=true" class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i>Editar Perfil
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    {% if not profile_complete or editing %}
+                        <!-- Formulario de edición -->
+                        <form method="post" action="{% url 'update_profile' %}" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nombre *</label>
+                                    <input type="text" name="first_name" class="form-control" 
+                                            value="{{ user.first_name }}" placeholder="Tu nombre" required minlength="2">
+                                    <div class="invalid-feedback">
+                                        El nombre es requerido y debe tener al menos 2 caracteres.
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Apellidos *</label>
+                                    <input type="text" name="last_name" class="form-control" 
+                                            value="{{ user.last_name }}" placeholder="Tus apellidos" required minlength="2">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" value="{{ user.email }}" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Fecha de Nacimiento</label>
+                                    <input type="date" name="birth_date" class="form-control" 
+                                            value="{{ user.profile.birth_date|date:'Y-m-d' }}">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Dirección</label>
+                                    <input type="text" name="address" class="form-control" 
+                                            value="{{ user.profile.address }}" placeholder="Tu dirección">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Ciudad</label>
+                                    <input type="text" name="city" class="form-control" 
+                                            value="{{ user.profile.city }}" placeholder="Tu ciudad">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="tel" name="phone" class="form-control" 
+                                            value="{{ user.profile.phone }}" placeholder="Solo números" pattern="[0-9]*">
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Guardar Cambios
+                                </button>
+                                {% if editing %}
+                                <a href="{% url 'profile' %}" class="btn btn-secondary ms-2">
+                                    <i class="fas fa-times me-2"></i>Cancelar
+                                </a>
+                                {% endif %}
+                            </div>
+                        </form>
+                    {% else %}
+                        <!-- Vista de solo lectura -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">Nombre</p>
+                                <p class="fw-bold">{{ user.first_name }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">Apellidos</p>
+                                <p class="fw-bold">{{ user.last_name }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">Email</p>
+                                <p class="fw-bold">{{ user.email }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">Fecha de Nacimiento</p>
+                                <p class="fw-bold">{{ user.profile.birth_date|date:"d/m/Y" }}</p>
+                            </div>
+                            <div class="col-12">
+                                <p class="text-muted mb-1">Dirección</p>
+                                <p class="fw-bold">{{ user.profile.address }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">Ciudad</p>
+                                <p class="fw-bold">{{ user.profile.city }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">Teléfono</p>
+                                <p class="fw-bold">{{ user.profile.phone }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Información de Tarjeta -->
+            <div class="card profile-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-credit-card me-2"></i>Información de Pago
+                        </h2>
+                        {% if has_card and not editing %}
+                        <a href="?edit=true#payment" class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i>Editar Tarjeta
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    {% if not has_card or editing %}
+                    <form method="post" action="{% url 'update_card' %}" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Número de Tarjeta *</label>
+                                <input type="text" name="card_number" class="form-control" 
+                                       value="{{ user.profile.card_number }}"
+                                       pattern="[0-9]{16}" maxlength="16" required
+                                       placeholder="1234567890123456">
+                                <div class="invalid-feedback">
+                                    Ingrese los 16 dígitos de su tarjeta.
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Nombre en la Tarjeta *</label>
+                                <input type="text" name="card_holder" class="form-control" 
+                                        value="{{ user.profile.card_holder }}" required
+                                        placeholder="NOMBRE COMO APARECE EN LA TARJETA">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Fecha de Expiración *</label>
+                                <input type="text" name="card_expiry" class="form-control" id="card_expiry"
+                                        value="{{ user.profile.card_expiry }}"
+                                        pattern="(0[1-9]|1[0-2])\/([0-9]{2})" required maxlength="5"
+                                        placeholder="MM/YY">
+                                <div class="invalid-feedback">
+                                    Formato inválido. Use MM/YY (ejemplo: 12/25)
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">CVV *</label>
+                                <input type="password" name="card_cvv" class="form-control" 
+                                        value="{{ user.profile.card_cvv }}"
+                                        pattern="[0-9]{3,4}" maxlength="4" required
+                                        placeholder="123">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Guardar Tarjeta
+                            </button>
+                            {% if editing %}
+                            <a href="{% url 'profile' %}" class="btn btn-secondary ms-2">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <p class="text-muted mb-1">Tarjeta registrada</p>
+                                    <p class="fw-bold">{{ user.profile.get_masked_card }}</p>
+                                </div>
+                                <div class="col-12">
+                                    <p class="text-muted mb-1">Titular</p>
+                                    <p class="fw-bold">{{ user.profile.card_holder }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="text-muted mb-1">Vence</p>
+                                    <p class="fw-bold">{{ user.profile.card_expiry }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+
+// Función para validar fecha de expiración
+function validateExpiryDate(input) {
+    const value = input.value;
+    if (!value) return false;
+
+    const [month, year] = value.split('/').map(num => parseInt(num, 10));
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear() % 100;
+    const currentMonth = currentDate.getMonth() + 1;
+
+    // Validar formato y rango de valores
+    if (isNaN(month) || isNaN(year) || month < 1 || month > 12) {
+        input.setCustomValidity('Mes inválido');
+        return false;
+    }
+
+    // Validar que la fecha no sea anterior a la actual
+    if (year < currentYear || (year === currentYear && month < currentMonth)) {
+        input.setCustomValidity('La tarjeta ha expirado');
+        return false;
+    }
+
+    input.setCustomValidity('');
+    return true;
+}
+
+// Agregar validación al input de fecha de expiración
+document.getElementById('card_expiry').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 2) {
+        value = value.slice(0,2) + '/' + value.slice(2,4);
+    }
+    e.target.value = value;
+    validateExpiryDate(e.target);
+});
+
+document.getElementById('card_expiry').addEventListener('blur', function(e) {
+    validateExpiryDate(e.target);
+});
+</script>
 {% endblock %}

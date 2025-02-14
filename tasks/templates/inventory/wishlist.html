@@ -1,0 +1,83 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+{% if user.is_authenticated %}
+<div class="container py-5">
+    <h1 class="mb-4">Mi Lista de Deseos</h1>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if wishlist_items.exists %}
+    <div class="row" id="wishlist-grid">
+        {% for item in wishlist_items %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 wishlist-card">
+                <div class="position-relative">
+                    {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" class="card-img-top" alt="{{ item.product.name }}">
+                    {% else %}
+                    <img src="{% static 'images/default_image.png' %}" class="card-img-top" alt="Imagen predeterminada">
+                    {% endif %}
+                    <form method="post" action="{% url 'remove_from_wishlist' item.product.id %}" class="position-absolute top-0 end-0 m-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm remove-wishlist">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </form>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ item.product.name }}</h5>
+                    <p class="card-text flex-grow-1">{{ item.product.description }}</p>
+                    <div class="mt-auto">
+                        <p class="card-text">
+                            <strong class="text-primary h4">${{ item.product.price }}</strong>
+                        </p>
+                        <div class="d-grid gap-2">
+                            <form method="post" action="{% url 'add_to_cart' item.product.id %}" class="add-to-cart-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-cart-plus me-2"></i>Agregar al Carrito
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent text-muted">
+                    <small>Agregado el {{ item.added_date|date:"d/m/Y" }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-heart fa-4x mb-3 text-muted"></i>
+        <h3>Tu lista de deseos está vacía</h3>
+        <p class="text-muted">¡Agrega productos a tu lista mientras exploras nuestra tienda!</p>
+        <a href="{% url 'product_list' %}" class="btn btn-primary">
+            <i class="fas fa-shopping-bag me-2"></i>Explorar Productos
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="container py-5 text-center">
+    <h2>Necesitas iniciar sesión para ver tu lista de deseos</h2>
+    <p class="mb-4">Por favor, inicia sesión para acceder a esta función.</p>
+    <a href="{% url 'signin' %}" class="btn btn-primary">
+        <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+    </a>
+</div>
+{% endif %}
+{% endblock %}

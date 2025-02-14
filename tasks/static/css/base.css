@@ -6,9 +6,126 @@ body {
 }
 
 /* Navbar */
-.navbar-brand{
-    font-weight: bold;
-    font-size: 1.5rem;
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: #fff !important;
+}
+
+.navbar-brand i {
+    color: #007bff;
+}
+
+.nav-link {
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #007bff !important;
+}
+
+.nav-link.active {
+    color: #007bff !important;
+}
+
+.navbar .input-group {
+    width: 300px;
+}
+
+.navbar .form-control {
+    border-radius: 20px 0 0 20px;
+    border: none;
+}
+
+.navbar .btn-outline-light {
+    border-radius: 0 20px 20px 0;
+}
+
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    min-width: 280px;
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+    border-radius: 0.5rem;
+}
+
+.dropdown-header {
+    padding: 0.75rem 1rem;
+    color: #6c757d;
+    font-size: 0.875rem;
+    background-color: #f8f9fa;
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.dropdown-header span {
+    display: block;
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.dropdown-divider {
+    margin: 0.5rem 0;
+}
+
+.dropdown-item {
+    padding: 0.75rem 1.5rem;
+    transition: all 0.2s ease;
+    color: #495057;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+    color: #007bff;
+}
+
+.dropdown-item i {
+    width: 20px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.dropdown-item:hover i {
+    color: #007bff;
+}
+
+.dropdown-item.text-danger:hover {
+    color: #dc3545;
+}
+
+.dropdown-item.text-danger:hover i {
+    color: #dc3545;
+}
+
+#cart-count {
+    font-size: 0.7rem;
+    transform: translate(-50%, -50%);
+}
+
+@media (max-width: 991.98px) {
+    .navbar .input-group {
+        width: 100%;
+        margin: 1rem 0;
+    }
+    
+    .navbar-nav {
+        padding: 1rem 0;
+    }
+    
+    .dropdown-menu {
+        margin-top: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background-color: #f8f9fa;
+        border-left: 3px solid #007bff;
+    }
 }
 
 /* Estilo del mensaje de bienvenida */
@@ -21,26 +138,91 @@ body {
 /* Estilos del footer */
 .footer {
     background-color: #f8f9fa;
-    padding: 40px 0 20px;
+    padding: 60px 0 30px;
     margin-top: auto;
+    border-top: 1px solid #e9ecef;
 }
 
 .footer-title {
-    color: #10182F;
+    color: #2c3e50;
     font-weight: 600;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.footer-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    height: 2px;
+    background-color: #007bff;
+}
+
+.contact-info .contact-item {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.contact-info .contact-item i {
+    width: 25px;
+    color: #007bff;
+}
+
+.contact-info .contact-item a {
+    color: #6c757d;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.contact-info .contact-item a:hover {
+    color: #007bff;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 12px;
 }
 
 .footer-links a {
-    color: #545D7A;
+    color: #6c757d;
     text-decoration: none;
-    transition: color 0.3s ease;
-    display: block;
-    padding: 5px 0;
+    transition: all 0.3s ease;
+    display: inline-block;
 }
 
 .footer-links a:hover {
-    color: #10182F;
+    color: #007bff;
+    transform: translateX(5px);
+}
+
+.newsletter-form .input-group {
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.newsletter-form .form-control {
+    border: none;
+    padding: 12px 20px;
+}
+
+.newsletter-form .btn {
+    padding: 12px 25px;
+    border: none;
+}
+
+.payment-methods {
+    height: 30px;
+    opacity: 0.7;
 }
 
 /* Estilos para los íconos de redes sociales */
@@ -97,17 +279,108 @@ body {
 }
 
 @media (max-width: 768px) {
-    .social-links {
-        justify-content: center;
-        margin-top: 25px;
+    .footer {
+        padding: 40px 0 20px;
     }
     
     .footer-title {
-        text-align: center;
-        margin-top: 20px;
+        margin-bottom: 20px;
     }
     
-    .footer-links {
-        text-align: center;
+    .social-links {
+        justify-content: center;
     }
+}
+
+/* Estilos para la página de órdenes */
+.order-card {
+    transition: transform 0.2s;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.order-card:hover {
+    transform: translateY(-5px);
+}
+
+.order-card .card-header {
+    border-bottom: none;
+    padding: 1rem 1.5rem;
+}
+
+.order-card .table {
+    margin-bottom: 0;
+}
+
+.order-card .table td, 
+.order-card .table th {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.pagination .page-link {
+    color: #007bff;
+    padding: 0.5rem 1rem;
+    border: none;
+    margin: 0 0.2rem;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Estilos para la lista de deseos */
+.wishlist-card {
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.wishlist-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.wishlist-card .card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.remove-wishlist {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.wishlist-card:hover .remove-wishlist {
+    opacity: 1;
+}
+
+.wishlist-card .card-footer {
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+/* Botón de agregar a lista de deseos en la lista de productos */
+.wishlist-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.wishlist-btn:hover {
+    transform: scale(1.1);
+}
+
+.wishlist-btn i {
+    color: #dc3545;
 }
