@@ -46,6 +46,8 @@ urlpatterns = [
     path('profile/update-avatar/', views.update_avatar, name='update_avatar'),
     path('profile/update/', views.update_profile, name='update_profile'),
     path('profile/update-card/', views.update_card, name='update_card'),
+    path('products/<int:product_id>/review/', views.create_review, name='create_review'),
+    path('products/<int:product_id>/', views.product_detail, name='product_detail'),
 ]
 
 if settings.DEBUG:

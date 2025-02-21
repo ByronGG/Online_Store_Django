@@ -1,0 +1,92 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Detalles del producto -->
+        <div class="col-md-6">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+            {% else %}
+            <img src="{% static 'images/default_product.png' %}" class="img-fluid rounded" alt="Imagen predeterminada">
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <h1 class="mb-4">{{ product.name }}</h1>
+            <p class="lead">{{ product.description }}</p>
+            <h2 class="text-primary mb-4">${{ product.price }}</h2>
+            
+            <!-- Formulario para agregar al carrito -->
+            <form method="post" action="{% url 'add_to_cart' product.id %}" class="mb-4">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="number" name="quantity" class="form-control" value="1" min="1" max="{{ product.stock }}">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-cart-plus me-2"></i>Agregar al Carrito
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sección de Reseñas -->
+    <div class="reviews-section mt-5">
+        <h3>Reseñas del Producto</h3>
+        
+        {% if user.is_authenticated %}
+            {% if has_bought and not has_reviewed %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Deja tu reseña</h5>
+                    <form method="post" action="{% url 'create_review' product.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Calificación</label>
+                            <div class="rating">
+                                {% for i in "54321" %}
+                                <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" required>
+                                <label for="star{{ i }}"><i class="fas fa-star"></i></label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Comentario</label>
+                            <textarea name="comment" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Enviar Reseña</button>
+                    </form>
+                </div>
+            </div>
+            {% elif not has_bought %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Debes comprar este producto para poder dejar una reseña.
+            </div>
+            {% endif %}
+        {% endif %}
+        
+        <!-- Lista de reseñas existentes -->
+        <div class="reviews-list">
+            {% for review in product.reviews.all %}
+            <div class="card review-card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">{{ review.user.username }}</h6>
+                        <div class="text-warning">
+                            {% for i in "12345"|make_list %}
+                            <i class="fas fa-star {% if forloop.counter <= review.rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <p class="card-text">{{ review.comment }}</p>
+                    <small class="text-muted review-date">{{ review.created_at|date:"d/m/Y" }}</small>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted">Este producto aún no tiene reseñas.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

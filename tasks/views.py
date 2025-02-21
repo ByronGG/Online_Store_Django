@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-from .models import Product, Order, OrderItem, Category, Wishlist, Profile  # Modelos BD
+from .models import Product, Order, OrderItem, Category, Wishlist, Profile, Review  # Modelos BD
 from django.core.paginator import Paginator  # Paginacion
 import re
 from django.db.models import Q
@@ -72,6 +72,16 @@ def product_list(request):
     # Iniciar con todos los productos
     products = Product.objects.all()
 
+    # Si el usuario está autenticado, verificar productos comprados
+    user_purchased_products = set()
+    if request.user.is_authenticated:
+        user_purchased_products = set(
+            OrderItem.objects.filter(
+                order__user=request.user,
+                order__is_completed=True
+            ).values_list('product_id', flat=True)
+        )
+
     # Aplicar filtros de búsqueda
     if query:
         products = products.filter(
@@ -109,6 +119,7 @@ def product_list(request):
         'categories': Category.objects.all(),
         'selected_category_name': selected_category_name,
         'query': query,
+        'user_purchased_products': user_purchased_products,
     }
     
     return render(request, "inventory/products.html", context)
@@ -436,4 +447,63 @@ def update_card(request):
         messages.success(request, "Tarjeta guardada correctamente.")
     
     return redirect('profile')
+
+@login_required
+def create_review(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    
+    # Verificar si el usuario ha comprado el producto
+    has_bought = OrderItem.objects.filter(
+        order__user=request.user,
+        order__is_completed=True,
+        product=product
+    ).exists()
+    
+    if not has_bought:
+        messages.error(request, "Solo puedes reseñar productos que hayas comprado.")
+        return redirect('product_list')
+    
+    if request.method == 'POST':
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment')
+        
+        if not rating or not comment:
+            messages.error(request, "Por favor completa todos los campos.")
+            return redirect('product_detail', product_id=product_id)
+            
+        Review.objects.update_or_create(
+            user=request.user,
+            product=product,
+            defaults={
+                'rating': rating,
+                'comment': comment
+            }
+        )
+        messages.success(request, "¡Gracias por tu reseña!")
+        return redirect('product_detail', product_id=product_id)
+
+@login_required
+def product_detail(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    
+    # Verificar si el usuario ha comprado el producto
+    has_bought = OrderItem.objects.filter(
+        order__user=request.user,
+        order__is_completed=True,
+        product=product
+    ).exists()
+    
+    # Verificar si el usuario ya ha dejado una reseña
+    has_reviewed = Review.objects.filter(
+        user=request.user,
+        product=product
+    ).exists()
+    
+    context = {
+        'product': product,
+        'has_bought': has_bought,
+        'has_reviewed': has_reviewed,
+    }
+    
+    return render(request, 'inventory/product_detail.html', context)
 

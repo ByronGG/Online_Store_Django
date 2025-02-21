@@ -74,7 +74,7 @@
     <!-- Resultados y ordenamiento -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <p class="mb-0">Mostrando {{ products.start_index }} - {{ products.end_index }} 
-           de {{ paginator.count }} productos</p>
+            de {{ paginator.count }} productos</p>
         <select class="form-select" style="width: auto;" id="orderBy">
             <option value="">Ordenar por</option>
             <option value="price_asc" {% if request.GET.order == 'price_asc' %}selected{% endif %}>
@@ -93,39 +93,48 @@
     <div class="row" id="products-grid">
         {% for product in products %}
         <div class="col-md-4 mb-4">
-            <div class="card h-100 product-card">
-                <div class="position-relative">
+            <div class="card h-100">
+                <a href="{% url 'product_detail' product.id %}" class="text-decoration-none">
                     {% if product.image %}
                     <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
                     {% else %}
-                    <img src="{% static 'images/default_image.png' %}" class="card-img-top" alt="Imagen predeterminada">
+                    <img src="{% static 'images/default_product.png' %}" class="card-img-top" alt="Imagen predeterminada">
                     {% endif %}
-                    <form method="post" action="{% url 'add_to_wishlist' product.id %}" class="position-absolute top-0 end-0 m-2">
-                        {% csrf_token %}
-                        <button type="submit" class="wishlist-btn" {% if product in user.wishlist_set.all %}disabled{% endif %}>
-                            <i class="fas fa-heart {% if product in user.wishlist_set.all %}text-danger{% endif %}"></i>
-                        </button>
-                    </form>
-                </div>
+                </a>
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">{{ product.name }}</h5>
+                    <h5 class="card-title">
+                        <a href="{% url 'product_detail' product.id %}" class="text-decoration-none text-dark">
+                            {{ product.name }}
+                        </a>
+                    </h5>
                     <p class="card-text flex-grow-1">{{ product.description }}</p>
                     <div class="mt-auto">
                         <p class="card-text">
                             <strong class="text-primary h4">${{ product.price }}</strong>
                         </p>
-                        <form method="post" action="{% url 'add_to_cart' product.id %}" class="add-to-cart-form">
-                            {% csrf_token %}
-                            <div class="input-group">
-                                <input type="number" name="quantity" 
-                                        class="form-control" value="1" 
-                                        min="1" max="100"
-                                        aria-label="Cantidad">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-cart-plus me-2"></i>Agregar
-                                </button>
-                            </div>
-                        </form>
+                        <div class="d-flex gap-2">
+                            <form method="post" action="{% url 'add_to_cart' product.id %}" class="add-to-cart-form flex-grow-1">
+                                {% csrf_token %}
+                                <div class="input-group">
+                                    <input type="number" name="quantity" 
+                                            class="form-control" value="1" 
+                                            min="1" max="100"
+                                            aria-label="Cantidad">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-cart-plus me-2"></i>Agregar
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            {% if user.is_authenticated %}
+                                {% if product.id in user_purchased_products %}
+                                    <a href="{% url 'product_detail' product.id %}#reviews" 
+                                        class="btn btn-outline-primary">
+                                        <i class="fas fa-star me-1"></i>Reseñar
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>

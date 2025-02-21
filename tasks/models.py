@@ -80,3 +80,18 @@ class Profile(models.Model):
         if self.card_number:
             return f"**** **** **** {self.card_number[-4:]}"
         return ""
+
+
+class Review(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('user', 'product')  # Un usuario solo puede dejar una reseña por producto
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Reseña de {self.user.username} para {self.product.name}"
