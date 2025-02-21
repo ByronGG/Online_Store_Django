@@ -1,1 +1,214 @@
-<h1>Contact</h1>
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto text-center mb-5">
+            <h1 class="display-4 mb-4">Contáctanos</h1>
+            <p class="lead text-muted">¿Tienes alguna pregunta o sugerencia? Estamos aquí para ayudarte.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información de Contacto -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm contact-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-map-marker-alt fa-3x text-primary mb-3 contact-icon"></i>
+                    <h3>Dirección</h3>
+                    <p>Av. Principal #123, Ciudad</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm contact-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-envelope fa-3x text-primary mb-3 contact-icon"></i>
+                    <h3>Email</h3>
+                    <p><a href="mailto:contacto@tienda.com" class="text-decoration-none">contacto@tienda.com</a></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm contact-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-phone fa-3x text-primary mb-3 contact-icon"></i>
+                    <h3>Teléfono</h3>
+                    <p><a href="tel:+123456789" class="text-decoration-none">(123) 456-7890</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">Envíanos un mensaje</h2>
+                    
+                    <form method="post" class="needs-validation" novalidate id="contactForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nombre</label>
+                            <input type="text" 
+                                    class="form-control" 
+                                    id="name" 
+                                    name="name" 
+                                    pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]{2,50}"
+                                    required>
+                            <div class="invalid-feedback">
+                                Por favor ingresa un nombre válido (solo letras, mínimo 2 caracteres)
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" 
+                                    class="form-control" 
+                                    id="email" 
+                                    name="email" 
+                                    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                                    required>
+                            <div class="invalid-feedback">
+                                Por favor ingresa un email válido
+                            </div> 
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Asunto</label>
+                            <input type="text" 
+                                    class="form-control" 
+                                    id="subject" 
+                                    name="subject" 
+                                    minlength="4"
+                                    maxlength="100"
+                                    required>
+                            <div class="invalid-feedback">
+                                El asunto debe tener entre 4 y 100 caracteres
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Mensaje</label>
+                            <textarea class="form-control" 
+                                        id="message" 
+                                        name="message" 
+                                        rows="5" 
+                                        minlength="10"
+                                        maxlength="500"
+                                        required></textarea>
+                            <div class="invalid-feedback">
+                                El mensaje debe tener entre 10 y 500 caracteres
+                            </div>
+                            <div class="form-text text-end">
+                                <span id="messageCount">0</span>/500 caracteres
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Enviar Mensaje
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .contact-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .contact-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+    }
+    
+    .contact-icon {
+        transition: all 0.3s ease;
+    }
+    
+    .contact-card:hover .contact-icon {
+        transform: scale(1.2);
+        color: #0056b3 !important;
+    }
+    
+    .form-control:focus {
+        border-color: #0056b3;
+        box-shadow: 0 0 0 0.2rem rgba(0,86,179,0.25);
+    }
+    
+    .btn-primary {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,86,179,0.3);
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('contactForm');
+    const messageTextarea = document.getElementById('message');
+    const messageCount = document.getElementById('messageCount');
+
+    // Validación del formulario
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+
+    // Validación de nombre en tiempo real
+    document.getElementById('name').addEventListener('input', function(e) {
+        const nameRegex = /^[A-Za-zÁáÉéÍíÓóÚúÑñ\s]{2,50}$/;
+        if (!nameRegex.test(e.target.value)) {
+            e.target.setCustomValidity('Nombre inválido');
+        } else {
+            e.target.setCustomValidity('');
+        }
+    });
+
+    // Validación de email en tiempo real
+    document.getElementById('email').addEventListener('input', function(e) {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(e.target.value)) {
+            e.target.setCustomValidity('Email inválido');
+        } else {
+            e.target.setCustomValidity('');
+        }
+    });
+
+    // Contador de caracteres para el mensaje
+    messageTextarea.addEventListener('input', function(e) {
+        const count = e.target.value.length;
+        messageCount.textContent = count;
+        
+        if (count < 10 || count > 500) {
+            e.target.setCustomValidity('El mensaje debe tener entre 10 y 500 caracteres');
+        } else {
+            e.target.setCustomValidity('');
+        }
+    });
+});
+</script>
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/contact.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/contact.js' %}"></script>
+{% endblock %}
+{% endblock %}

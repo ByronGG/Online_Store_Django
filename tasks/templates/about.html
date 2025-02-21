@@ -1,1 +1,95 @@
-<h1>About</h1>
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto text-center mb-5">
+            <h1 class="display-4 mb-4">Sobre Nosotros</h1>
+            <p class="lead text-muted">Somos una tienda en línea comprometida con ofrecer los mejores productos y servicios a nuestros clientes.</p>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <img src="{% static 'images/about-store.jpg' %}" alt="Nuestra tienda" class="img-fluid rounded shadow-lg">
+        </div>
+        <div class="col-md-6">
+            <h2 class="mb-4">Nuestra Historia</h2>
+            <p>Este es un proyecto de desarrollo web creado por un programador Junior como parte de su portafolio profesional. Desarrollado con Django y Bootstrap, demuestra la implementación de una tienda en línea completamente funcional.</p>
+            <p>El proyecto incluye características como gestión de usuarios, carrito de compras, lista de deseos y un panel de administración completo, todo desarrollado siguiendo las mejores prácticas de programación.</p>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2>Nuestros Valores</h2>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm value-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-heart fa-3x text-primary mb-3 value-icon"></i>
+                    <h3>Calidad</h3>
+                    <p>Nos comprometemos a ofrecer solo productos de la más alta calidad a nuestros clientes.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm value-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-handshake fa-3x text-primary mb-3 value-icon"></i>
+                    <h3>Confianza</h3>
+                    <p>Construimos relaciones duraderas basadas en la honestidad y transparencia.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm value-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-3x text-primary mb-3 value-icon"></i>
+                    <h3>Comunidad</h3>
+                    <p>Creemos en crear una comunidad fuerte y apoyar a nuestros clientes en todo momento.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 text-center">
+            <h2 class="mb-4">¿Listo para comenzar?</h2>
+            <p class="lead mb-4">Únete a nuestra comunidad y descubre la diferencia.</p>
+            <a href="{% url 'product_list' %}" class="btn btn-primary btn-lg me-3">
+                <i class="fas fa-shopping-bag me-2"></i>Ver Productos
+            </a>
+            <a href="{% url 'contact' %}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-envelope me-2"></i>Contáctanos
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .value-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .value-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+    }
+    
+    .value-icon {
+        transition: all 0.3s ease;
+    }
+    
+    .value-card:hover .value-icon {
+        transform: scale(1.2);
+        color: #0056b3 !important;
+    }
+    
+    .value-card:hover h3 {
+        color: #0056b3;
+    }
+</style>
+{% endblock %}

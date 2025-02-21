@@ -8,8 +8,8 @@ from django.db import IntegrityError
 from .models import Product, Order, OrderItem, Category, Wishlist, Profile, Review  # Modelos BD
 from django.core.paginator import Paginator  # Paginacion
 import re
-from django.db.models import Q
-from django.contrib.auth.decorators import login_required
+from django.db.models import Q  # Busqueda
+from django.contrib.auth.decorators import login_required  # Decorador para verificar si el usuario está autenticado
 import os
 from datetime import datetime
 
